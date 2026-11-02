@@ -45,11 +45,12 @@ class LLMClient:
                 contents=full_prompt
             )
 
-            # Check whether response contains text
-            if not response or not response.text:
+            # Check whether response contains usable text
+            response_text = response.text if response else None
+            if not response_text or not response_text.strip():
                 return "Sorry, I couldn't generate a response. Please try again."
 
-            return response.text.strip()
+            return response_text.strip()
 
         except Exception as e:
             return f"Error communicating with Gemini API: {str(e)}"
