@@ -20,9 +20,7 @@ class LLMClient:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
 
         if not self.api_key:
-            raise ValueError(
-                "GEMINI_API_KEY is missing. Please configure it in your .env file."
-            )
+            raise ValueError("GEMINI_API_KEY not found in environment variables")
 
         # Initialize Gemini client
         self.client = genai.Client(api_key=self.api_key)
@@ -48,9 +46,15 @@ class LLMClient:
             # Check whether response contains usable text
             response_text = response.text if response else None
             if not response_text or not response_text.strip():
-                return "Sorry, I couldn't generate a response. Please try again."
+                return "Sorry, I didn't receive a valid response from Gemini. Please try again."
 
-            return response_text.strip()
+            response_text = response_text.strip()
+            if response_text.startswith("```") and response_text.endswith("```"):
+                first_line, _, content = response_text.partition("\n")
+                if first_line.startswith("```"):
+                    response_text = content[:-3].strip()
+
+            return response_text
 
         except Exception as e:
             return f"Error communicating with Gemini API: {str(e)}"
@@ -77,7 +81,7 @@ class MenuAssistant:
             return self.llm_client.call(query.strip())
 
         except Exception as e:
-            return f"Unable to process your request: {str(e)}"
+            return f"Sorry, I encountered an error: {str(e)}"
 
 
 def main():
