@@ -17,9 +17,9 @@ class LLMClient:
         load_dotenv()
 
         # Get API key
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.api_key = api_key if api_key is not None else os.getenv("GEMINI_API_KEY")
 
-        if not self.api_key:
+        if not self.api_key or not self.api_key.strip():
             raise ValueError("GEMINI_API_KEY not found in environment variables")
 
         # Initialize Gemini client
