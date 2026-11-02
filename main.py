@@ -34,33 +34,23 @@ class LLMClient:
         if not isinstance(user_query, str) or not user_query.strip():
             raise ValueError("user_query must be a non-empty string")
 
-        try:
-            # Format the prompt with the user query
-            full_prompt = SYSTEM_PROMPT.format(
-                user_query=user_query
-            )
+        full_prompt = SYSTEM_PROMPT.format(user_query=user_query)
+        response = self.client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=full_prompt
+        )
 
-            # Call Gemini API
-            response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=full_prompt
-            )
+        response_text = response.text if response else None
+        if not response_text or not response_text.strip():
+            return "Sorry, I didn't receive a valid response from Gemini. Please try again."
 
-            # Check whether response contains usable text
-            response_text = response.text if response else None
-            if not response_text or not response_text.strip():
-                return "Sorry, I didn't receive a valid response from Gemini. Please try again."
+        response_text = response_text.strip()
+        if response_text.startswith("```") and response_text.endswith("```"):
+            first_line, _, content = response_text.partition("\n")
+            if first_line.startswith("```"):
+                response_text = content[:-3].strip()
 
-            response_text = response_text.strip()
-            if response_text.startswith("```") and response_text.endswith("```"):
-                first_line, _, content = response_text.partition("\n")
-                if first_line.startswith("```"):
-                    response_text = content[:-3].strip()
-
-            return response_text
-
-        except Exception as e:
-            return f"Error communicating with Gemini API: {str(e)}"
+        return response_text
 
 
 class MenuAssistant:
