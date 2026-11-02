@@ -31,6 +31,9 @@ class LLMClient:
     def call(self, user_query: str) -> str:
         """Call the LLM with the system prompt and user query."""
 
+        if not isinstance(user_query, str) or not user_query.strip():
+            raise ValueError("user_query must be a non-empty string")
+
         try:
             # Format the prompt with the user query
             full_prompt = SYSTEM_PROMPT.format(
